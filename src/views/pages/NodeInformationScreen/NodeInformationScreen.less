@@ -1,0 +1,121 @@
+/**
+ * This file is part of dHealth Wallet Plugins shared under LGPL-3.0
+ * Copyright (C) 2021 Using Blockchain Ltd, Reg No.: 12658136, United Kingdom
+ *
+ * @package     dHealth Wallet Plugins
+ * @subpackage  NodeMonitor
+ * @author      Grégory Saive for Using Blockchain Ltd <greg@ubc.digital>
+ * @license     LGPL-3.0
+ */
+@import "../../../theme.less";
+
+.dhealth-node-information-table-container {
+  display: grid;
+  grid-template-rows: auto;
+
+  .row {
+    display: flex;
+  }
+
+  .input-size {
+    width: 100%;
+    height: 100%;
+  }
+
+  .input-style {
+    height: @formFieldHeight;
+    border: none;
+    outline: none;
+    padding-left: 0.2rem;
+    padding-right: 0.15rem;
+    font-size: @biggerFont;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 0.04rem;
+    &:-webkit-autofill::first-line {
+      font-size: @biggerFont;
+      font-family: @themeFontLight;
+    }
+  }
+
+  .node-status-container {
+    background-color: transparent;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .node-status-inner-container {
+      width: 100%;
+      padding-left: 0.2rem;
+      padding-right: 0.2rem;
+      display: flex;
+      justify-content: center;
+
+      padding-top: 8px;
+      padding-bottom: 8px;
+
+      border-radius: @borderRadius;
+      background-color: white;
+
+      > div {
+          padding: 18px 0 18px 30px;
+          position: relative;
+          max-width: 250px;
+
+        .status-label {
+          > span {
+            font-size: @biggerFont;
+            line-height: 33px;
+            color: @primary;
+          }
+        }
+
+        .status-value {
+          font-size: @biggerFont;
+          font-weight: 400;
+          display: inline-block;
+          color: @secondary;
+          line-height: 40px;
+        }
+
+        .status-value.flex-value {
+          display: flex;
+        }
+      }
+    }
+  }
+
+  .status-icon-container {
+    height: 32px;
+    width: 32px;
+  }
+
+  .logo-wrapper {
+    display: inline-block;
+    height: 32px;
+    width: 32px;
+    margin-right: 10px;
+    opacity: 0.4;
+    margin-top: 5px;
+  }
+
+  .network-name {
+    margin-top: 10px;
+  }
+
+  .form-label {
+    padding-left: .3rem;
+  }
+
+  .flex-value {
+    display: flex;
+  }
+}
+
+.mb0 { margin-bottom: 0; }
+.mt0 { margin-top: 0; }
+
