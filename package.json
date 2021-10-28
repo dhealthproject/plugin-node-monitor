@@ -2,7 +2,7 @@
   "name": "@dhealth/plugin-node-monitor",
   "description": "Node Monitor helps monitor your dHealth Network Nodes",
   "homepage": "https://github.com/dhealthproject/plugin-node-monitor#readme",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": {
     "name": "Using Blockchain Ltd",
     "email": "info@ubc.digital",
@@ -21,6 +21,7 @@
   "files": [
     "dist/*",
     "README.md",
+    "LICENSE",
     "package.json"
   ],
   "scripts": {
@@ -31,11 +32,13 @@
     "copy:vue": "cpy '**/*.vue' '../dist/' --cwd=src --parents"
   },
   "dependencies": {
-    "@dhealth/wallet-api-bridge": "file:../../@dhealth/dhealth-wallet-api-bridge",
-    "@dhealth/wallet-components": "file:../../@dhealth/dhealth-wallet-components",
+    "@dhealth/wallet-api-bridge": "^1.3.0",
+    "@dhealth/wallet-components": "^1.3.0",
     "vue": "^2.6.10",
     "vue-property-decorator": "^8.1.0",
-    "vee-validate": "^3.2.3"
+    "vee-validate": "^3.2.3",
+    "bignumber.js": "^9.0.1",
+    "symbol-openapi-typescript-fetch-client": "1.0.1"
   },
   "devDependencies": {
     "@babel/compat-data": "^7.14.0",

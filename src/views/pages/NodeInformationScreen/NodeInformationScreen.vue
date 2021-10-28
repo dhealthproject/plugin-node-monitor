@@ -11,15 +11,15 @@
 -->
 <template>
   <div class="dhealth-node-information-table-container">
-    <div class="node-status-container">
-      <div class="node-status-inner-container">
+    <div class="screen-topbar-container">
+      <div class="screen-topbar-inner-container">
         <div class="value-container">
           <div class="status-label"><span>Friendly name</span></div>
           <div class="status-value"><span>{{ getField('friendlyName') }}</span></div>
         </div>
         <div class="value-container">
           <div class="status-label"><span>Version</span></div>
-          <div class="status-value"><span>{{ getField('semverVersion') }}</span></div>
+          <div class="status-value"><span>{{ getNodeVersion() }}</span></div>
         </div>
         <div class="value-container">
           <div class="status-label"><span>Hostname</span></div>
@@ -38,7 +38,7 @@
           </div>
         </div>
       </div>
-    </div> <!-- /.node-status-container -->
+    </div> <!-- /.screen-topbar-container -->
 
     <FormRow class-name="node-network-container mt0 mb0">
       <template v-slot:inputs>
@@ -46,10 +46,10 @@
           <IconLoading v-if="isLoadingNodeHealth" />
           <div v-else class="status-value flex-value">
             <div class="logo-wrapper">
-              <SymbolLogo v-if="'mainnet:symbol.xym' === getField('networkDescriptor')" />
-              <dHealthLogo v-else-if="'mainnet:dhealth.dhp' === getField('networkDescriptor')" />
+              <SymbolLogo v-if="'mainnet:symbol.xym' === getNetworkDescriptor(nodeModel.networkGenerationHashSeed)" />
+              <dHealthLogo v-else-if="'mainnet:dhealth.dhp' === getNetworkDescriptor(nodeModel.networkGenerationHashSeed)" />
             </div>
-            <span class="network-name">{{ getNetwork(getField('networkDescriptor')) }}</span>
+            <span class="network-name">{{ getNetworkName(nodeModel.networkGenerationHashSeed) }}</span>
           </div>
         </div>
       </template>
@@ -58,7 +58,7 @@
     <FormRow class-name="identity-pubkey-container mb0">
       <template v-slot:label>Public key:</template>
       <template v-slot:inputs>
-        <div class="inputs-container">
+        <div class="inputs-container with-button">
           <input
             v-model="nodeModel.publicKey"
             class="input-size input-style"
@@ -66,6 +66,7 @@
             type="text"
             disabled="disabled"
           />
+          <ButtonCopy v-model="nodeModel.publicKey" />
         </div>
       </template>
     </FormRow>
@@ -73,7 +74,7 @@
     <FormRow class-name="node-pubkey-container mt0 mb0">
       <template v-slot:label>Node key:</template>
       <template v-slot:inputs>
-        <div class="inputs-container">
+        <div class="inputs-container with-button">
           <input
             v-model="nodeModel.nodePublicKey"
             class="input-size input-style"
@@ -81,6 +82,7 @@
             type="text"
             disabled="disabled"
           />
+          <ButtonCopy v-model="nodeModel.nodePublicKey" />
         </div>
       </template>
     </FormRow>
@@ -105,8 +107,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from 'vue-property-decorator';
-import { FormRow, IconLoading, NodeModel, NodeService, NetworkService } from '@dhealth/wallet-components';
+import { NodeInfoDTO } from 'symbol-openapi-typescript-fetch-client';
+import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import { getNodeNetwork, getNodeVersion, NetworkService, NodeService } from '@dhealth/wallet-api-bridge';
+import { ButtonCopy, FormRow, IconLoading } from '@dhealth/wallet-components';
 
 // internal child components
 import dHealthLogo from '../../../components/dHealthLogo/dHealthLogo.vue';
@@ -116,6 +120,7 @@ import IconError from '../../../components/IconError/IconError.vue';
 
 @Component({
   components: {
+    ButtonCopy,
     dHealthLogo,
     FormRow,
     IconError,
@@ -127,10 +132,10 @@ import IconError from '../../../components/IconError/IconError.vue';
 export default class NodeInformationScreen extends Vue {
   /**
    * The currently selected node.
-   * @var {NodeModel}
+   * @var {NodeInfoDTO}
    */
   @Prop({ default: undefined })
-  public nodeModel: NodeModel;
+  public nodeModel: NodeInfoDTO;
 
   /**
    * The service for remote calls.
@@ -148,7 +153,7 @@ export default class NodeInformationScreen extends Vue {
    * The current node's peers.
    * @var {NodeModel[]}
    */
-  protected peerNodes: NodeModel[];
+  protected peerNodes: NodeInfoDTO[];
 
   /**
    * The current node's health status.
@@ -168,28 +173,26 @@ export default class NodeInformationScreen extends Vue {
    */
   protected isLoadingNodeHealth: boolean = true;
 
+  /**
+   * Watcher for the property `nodeModel`. When the selected
+   * node changes, data should be refreshed.
+   *
+   * @returns {void}
+   */
+  @Watch('nodeModel', { immediate: true })
+  protected watchSelectedNode(newValue, oldValue) {
+    if (oldValue !== undefined && newValue.nodePublicKey !== oldValue.nodePublicKey) {
+      this.refreshData();
+    }
+  }
+
   /// region components methods
   /**
    * Hook called on creation of the Component (render).
    * @async
    */
   async created() {
-    this.nodeService = new NodeService();
-    const nodeUrl = this.nodeModel.host;
-
-    try {
-      // fetch node health
-      this.nodeHealth = await this.nodeService.getNodeHealth(nodeUrl);
-      this.isLoadingNodeHealth = false;
-
-      // fetch peers neighborhood
-      this.peerNodes = await this.nodeService.getNodePeers(nodeUrl);
-      this.numberOfPeers = this.peerNodes.length;
-      this.isLoadingNodePeers = false;
-    }
-    catch (e) {
-      console.log(e);
-    }
+    await this.refreshData();
   }
 
   /**
@@ -216,28 +219,71 @@ export default class NodeInformationScreen extends Vue {
       return this.nodeModel[name].join(', ');
     }
 
+    console.log("unrecognized field: ", name);
     console.log("unrecognized field value: ", this.nodeModel[name]);
     console.log("unrecognized field type: ", typeof this.nodeModel[name]);
     return 'N/A';
   }
 
   /**
-   * Get a network's name by descriptor.
+   * Get a network's name by generation hash.
    *
-   * @param   {string}  descriptor
+   * @param   {string}  genHash
    * @returns {string}
    */
-  protected getNetwork(descriptor: string): string {
-    // in case the network is unknown
-    if (! (descriptor in NetworkService.TRUSTED_NETWORKS)) {
-      return 'Unknown network';
-    }
-
+  protected getNetworkName(genHash: string): string {
     // uses @dhealth/wallet-components
-    const genHash = NetworkService.TRUSTED_NETWORKS[descriptor];
     return NetworkService.getNetworkName(genHash);
   }
+
+  /**
+   * Get a network's descriptor by generation hash.
+   *
+   * @param   {string}  genHash
+   * @returns {string}
+   */
+  protected getNetworkDescriptor(genHash: string): string {
+    return getNodeNetwork(genHash);
+  }
+
+  /**
+   * Get a node's version in semantic versioning
+   * format, e.g.: 1.0.0.0.
+   *
+   * @returns {string}
+   */
+  protected getNodeVersion(): string {
+    return getNodeVersion(this.getField('version'));
+  }
   /// end-region components methods
+
+  /// region private api
+  /**
+   * Private method to refresh data of the component.
+   *
+   * @async
+   * @returns {void}
+   */
+  private async refreshData() {
+    this.nodeService = new NodeService();
+    const nodeUrl = this.nodeModel.host;
+    this.isLoadingNodeHealth = true;
+    this.isLoadingNodePeers = true;
+    try {
+      // fetch node health
+      this.nodeHealth = await this.nodeService.getNodeHealth(nodeUrl);
+      this.isLoadingNodeHealth = false;
+
+      // fetch peers neighborhood
+      this.peerNodes = await this.nodeService.getNodePeers(nodeUrl);
+      this.numberOfPeers = this.peerNodes.length;
+      this.isLoadingNodePeers = false;
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
+  /// end-region private api
 }
 </script>
 

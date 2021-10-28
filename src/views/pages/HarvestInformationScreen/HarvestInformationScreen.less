@@ -7,9 +7,35 @@
  * @author      Grégory Saive for Using Blockchain Ltd <greg@ubc.digital>
  * @license     LGPL-3.0
  */
-@import "../../../theme.less";
+@import "../../../theme.screen.less";
 
-.dhealth-chain-information-screen-container {
+.dhealth-harvester-information-screen-container {
   display: grid;
-  grid-template-rows: auto;
+  grid-template-rows: 1.2rem auto;
+
+  .screen-main-container {
+    display: flex;
+
+    .w30 { width: 30%; }
+    .w70 { width: 70%; }
+
+    .table-wrapper {
+      padding: 0 5px;
+    }
+
+    .table-wrapper.p-custom {
+      .table-cell {
+        padding: .2rem 0 0 .1rem;
+      }
+    }
+
+    .table-section.table-container {
+      grid-template-rows: .4rem auto .5rem;
+    }
+
+    .empty-list {
+      text-align: center;
+      font-size: 1.2em;
+    }
+  }
 }

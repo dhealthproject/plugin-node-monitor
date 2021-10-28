@@ -19,7 +19,7 @@
       <div v-if="hasRequestedNodeInfo" class="node-details-container">
         <NavigationLinks
           :direction="'horizontal'"
-          :items="['Node', 'Chain', 'Harvesting', 'Console']"
+          :items="['Node', 'Chain', 'Harvesting']"
           :current-item-index="activeSubpage"
           @selected="(i) => (activeSubpage = i)"
         />
@@ -35,18 +35,14 @@
         <div v-else-if="activeSubpage === subpageIndexes['harvesting']" class="subpage-field">
           <HarvestInformationScreen :node-model="nodeModel" />
         </div>
-
-        <div v-else-if="activeSubpage === subpageIndexes['console']" class="subpage-field">
-          <NodeConsoleScreen :node-model="nodeModel" />
-        </div>
       </div>
     </div>
     <div class="dashboard-right-container">
       <div class="title">
         <span class="title_txt">{{ 'Plugin details' }}</span>
       </div>
-      <p>This plugin lets you input any API node that is connected to dHealth Network to request information about its' status, chain information, and many more.</p>
-      <p>Select a node in the form on the left of this screen, then click the Request button. Node information will be displayed below the node finder form.</p>
+      <p>This plugin lets you input any API node using dHealth to request information about its' status, chain information, and many more.</p>
+      <p>Select a node in the form on the left of this screen, then click the Request button. Node information will be displayed below.</p>
       <p>This tool works with any <i>Catapult</i> compatible network which includes: <a href="https://dhealth.network" target="_blank">dHealth Network</a>, <a href="https://dhealth.network" target="_blank">dHealth Test Network</a>, Symbol Platform and Symbol Testnet.</p>
 
       <a
@@ -60,14 +56,14 @@
 </template>
 
 <script lang="ts">
+import { NodeInfoDTO } from 'symbol-openapi-typescript-fetch-client';
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { IconLoading, NavigationLinks, NodeModel } from '@dhealth/wallet-components';
+import { IconLoading, NavigationLinks } from '@dhealth/wallet-components';
 
 // internal child components
 import NodeInformationScreen from '../NodeInformationScreen/NodeInformationScreen.vue';
 import ChainInformationScreen from '../ChainInformationScreen/ChainInformationScreen.vue';
 import HarvestInformationScreen from '../HarvestInformationScreen/HarvestInformationScreen.vue';
-import NodeConsoleScreen from '../NodeConsoleScreen/NodeConsoleScreen.vue';
 import FormNodeFinder from '../../forms/FormNodeFinder/FormNodeFinder.vue';
 
 @Component({
@@ -77,22 +73,21 @@ import FormNodeFinder from '../../forms/FormNodeFinder/FormNodeFinder.vue';
     FormNodeFinder,
     IconLoading,
     NavigationLinks,
-    NodeConsoleScreen,
     NodeInformationScreen,
   }
 })
 export default class NodeMonitor extends Vue {
   /**
    * The plugin fork URL (Github repository).
-   * @var {NodeModel}
+   * @var {string}
    */
   protected forkUrl: string = 'https://github.com/dhealthproject/plugin-node-monitor';
 
   /**
    * The currently selected node.
-   * @var {NodeModel}
+   * @var {NodeInfoDTO}
    */
-  protected nodeModel: NodeModel;
+  protected nodeModel: NodeInfoDTO;
 
   /**
    * Whether a request has been executed.
@@ -140,17 +135,6 @@ export default class NodeMonitor extends Vue {
 
     this.selectedSubpage = index;
   }
-
-  /**
-   * Whether the monitor is currently loading the node model.
-   *
-   * @returns {boolean}
-   */
-  get isLoadingNodeModel(): boolean {
-    return undefined === this.nodeModel
-      || !('nodePublicKey' in this.nodeModel)
-      || !this.nodeModel.nodePublicKey.length
-  }
   /// end-region computed properties
 
   /// region component methods
@@ -167,7 +151,7 @@ export default class NodeMonitor extends Vue {
   protected onSubmitNode(formItems: any) {
     this.hasRequestedNodeInfo = true;
     this.nodeModel = formItems.nodeModel;
-
+    this.$forceUpdate();
     //XXX if formItems.rememberNode => save node
   }
   /// end-region component methods

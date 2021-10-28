@@ -47,8 +47,9 @@
 </template>
 
 <script lang="ts">
+import { NodeInfoDTO } from 'symbol-openapi-typescript-fetch-client';
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { FormRow, IconLoading, NetworkNodeSelector, NodeModel } from '@dhealth/wallet-components';
+import { FormRow, IconLoading, NetworkNodeSelector } from '@dhealth/wallet-components';
 
 @Component({
   components: {
@@ -63,7 +64,7 @@ export default class FormNodeFinder extends Vue {
    * @var {[key:string]: any}
    */
   protected formItems = {
-    nodeModel: { nodePublicKey: '' } as NodeModel,
+    nodeModel: { nodePublicKey: '' } as NodeInfoDTO,
     rememberNode: false,
   };
 
@@ -72,6 +73,12 @@ export default class FormNodeFinder extends Vue {
    * @var {boolean}
    */
   protected isButtonDisplayed: boolean = true;
+
+  /**
+   * Last timestamp of node info request.
+   * @var {number}
+   */
+  protected lastRequestedInfoAt: number;
 
   /**
    * Whether the submit button is disabled.
@@ -89,6 +96,7 @@ export default class FormNodeFinder extends Vue {
    * @return {void}
    */
   public onSubmit() {
+    this.lastRequestedInfoAt = new Date().valueOf();
     this.isButtonDisplayed = false;
     this.$emit('submit', this.formItems);
   }
