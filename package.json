@@ -2,7 +2,7 @@
   "name": "@dhealth/plugin-node-monitor",
   "description": "Node Monitor helps monitor your dHealth Network Nodes",
   "homepage": "https://github.com/dhealthproject/plugin-node-monitor#readme",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Using Blockchain Ltd",
     "email": "info@ubc.digital",
@@ -27,7 +27,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "npm run build:lib && npm run build:ts && npm run copy:vue",
-    "build:lib": "vue-cli-service build --target lib --name dHealthWalletPluginNodeMonitor src/Monitor.ts --mode production",
+    "build:lib": "vue-cli-service build --target lib --name dHealthWalletPluginNodeMonitor src/Monitor.ts --mode production --inline-vue --formats commonjs",
     "build:ts": "tsc --emitDeclarationOnly",
     "copy:vue": "cpy '**/*.vue' '../dist/' --cwd=src --parents"
   },
