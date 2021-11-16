@@ -52,9 +52,8 @@ export default {
         title: "Node Monitor",
         hideFromMenu: true,
       },
-      // @ts-ignore
-      component: () => import("@/views/pages/NodeMonitor/NodeMonitor.vue"),
       props: false,
+      // no-component
     },
   ],
 
