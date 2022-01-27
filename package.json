@@ -2,7 +2,7 @@
   "name": "@dhealth/plugin-node-monitor",
   "description": "Node Monitor helps monitor your dHealth Network Nodes",
   "homepage": "https://github.com/dhealthproject/plugin-node-monitor#readme",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "Using Blockchain Ltd",
     "email": "info@ubc.digital",
